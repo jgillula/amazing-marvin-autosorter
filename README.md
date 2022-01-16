@@ -19,7 +19,7 @@ You can get the docker container from [Docker Hub](https://hub.docker.com/r/flyi
 docker pull flyingsaucrdude/amazing-marvin-autosorter
 ```
 
-I use [Google Cloud Run](https://cloud.google.com/run_ to host the container, but you can use any service you like as long as it hosts the container at a publicly accessible URL.
+I use [Google Cloud Run](https://cloud.google.com/run) to host the container, but you can use any service you like as long as it hosts the container at a publicly accessible URL.
 
 #### First time setup
 To run the container on Google Cloud Run, first [create a project](https://console.cloud.google.com/projectcreate) and remember its Project ID. Then enable the [Cloud Run API](http://console.cloud.google.com/apis/library/run.googleapis.com) and the [Artifact Registry API](https://console.cloud.google.com/flows/enableapi?apiid=artifactregistry.googleapis.com&redirect=https://cloud.google.com/artifact-registry/docs/docker/quickstart) for that project. Then on your local machine, assuming you already pulled the container from Docker Hub, you need to do the following to set things up from scratch:
@@ -40,6 +40,7 @@ docker tag flyingsaucrdude/amazing-marvin-autosorter:latest us-west1-docker.pkg.
 docker push us-west1-docker.pkg.dev/$PROJECT_ID/amazing-marvin-autosorter-repo/amazing-marvin-autosorter
 gcloud run deploy amazing-marvin-autosorter --image us-west1-docker.pkg.dev/$PROJECT_ID/amazing-marvin-autosorter-repo/amazing-marvin-autosorter
 ```
+Once it's deployed, take note of the Service URL--you'll need that later when configuring Amazing Marvin.
 
 ### 2. Configure the docker container
 
