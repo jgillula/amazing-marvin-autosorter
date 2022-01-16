@@ -10,7 +10,7 @@ Amazing Marvin offers a set of [webhooks](https://github.com/amazingmarvin/Marvi
 
 Unfortunately Amazing Marvin doesn't let you create persistent sorts based on whether or not a task is done, or whether or not it's on the backburner, or whether or not it has dependencies. This means even when you check off a task, it won't move to the bottom of your master list. It also means that if a task is blocked waiting on other tasks, there's no way to automatically move it to the bottom of your list.
 
-## Setup
+## How to use it
 
 ### 1. Setup and run the docker container
 
@@ -22,8 +22,13 @@ The docker container is configured via environment variables. The following envi
 * `COUCHDB_PASSWORD` - The password for the Amazing Marvin couchdb instance, available [here](https://app.amazingmarvin.com/pre?api) as `syncPassword`
 * `COUCHDB_HOSTNAME` - The hostname for the Amazing Marvin couchdb instance, available [here](https://app.amazingmarvin.com/pre?api) as `syncServer`
 * `COUCHDB_DATABASE` - The specific database within the Amazing Marvin couchdb instance, available [here](https://app.amazingmarvin.com/pre?api) as `syncDatabase`
-* `ACCESS_TOKENS_LIST` - This is a JSON list of strings, each of which is an access token that the docker container will use to authenticate the clients that connect to it. I recommend using something long and random, like the output of `import random, string; print(''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(64)))`. It's OK if there is only one item in this list and you just use the same access token everywhere, but it's a list in case you want to have different clients use different access tokens.
-* `SORT_LIST` - A JSON list that descripbes the sort you want automatically applied after any changes. See [Sort list syntax](FIXME) for the syntax.
+* `ACCESS_TOKENS_LIST` - This is a JSON list of strings, each of which is an access token that the docker container will use to authenticate the clients that connect to it. I recommend using something long and random, like the output of 
+   ```
+   import random, string
+   print(''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(64)))
+   ```
+   It's OK if there is only one item in this list and you just use the same access token everywhere, but it's a list in case you want to have different clients use different access tokens.
+* `SORT_LIST` - A JSON list that descripbes the sort you want automatically applied after any changes. See [Sort list syntax](#sort-list-syntax) for the syntax.
 
 The following environment variables are *optional*:
 
@@ -36,18 +41,20 @@ The next step is to configure Amazing Marvin.
 
 1. Since Amazing Marvin's webhooks can't be setup to operate on all tasks, we'll create a Smart List which will include all tasks. To do so, create a new smart list, name it whatever you want (e.g. "All Tasks"), and under "Filters" set "Item Type" to "Tasks". Then save.
 2. Go to the API feature settings, and add the following webhooks:
-**Trigger** | **Method** | **URL**
----|---|---
-Edit|`POST`|`{DOCKER_URL}/edit`
-Add Task/Project|`POST`|`{DOCKER_URL}/add`
-Mark Done|`POST`|`{DOCKER_URL}/markDone`
-Delete|`POST`|`{DOCKER_URL}/delete`
-where `{DOCKER_URL}` is the URL of your docker container (e.g. `https://some.domain.com`). Set the Smart List for each webhook to the "All Tasks" list you created in step one. Finally, for **each** webhook set the headers to:
-```
-Authorization: Bearer {ACCESS_TOKEN}
-ContentType: application/json
-```
-where `{ACCESS_TOKEN}` is one of the access tokens you created back when you were configuring the docker container.
+
+   **Trigger** | **Method** | **URL**
+   --- | --- | ---
+   Edit | `POST` | `{DOCKER_URL}/edit`
+   Add Task/Project | `POST` | `{DOCKER_URL}/add`
+   Mark Done | `POST` | `{DOCKER_URL}/markDone`
+   Delete | `POST` | `{DOCKER_URL}/delete`
+   
+   where `{DOCKER_URL}` is the URL of your docker container (e.g. `https://some.domain.com`). Set the Smart List for each webhook to the "All Tasks" list you created in step one. Finally, for **each** webhook set the headers to:
+   ```
+   Authorization: Bearer {ACCESS_TOKEN}
+   ContentType: application/json
+   ```
+   where `{ACCESS_TOKEN}` is one of the access tokens you created back when you were configuring the docker container.
 3. Finally, if you change something and it doesn't trigger a sort, you can always trigger one manually by visiting `{DOCKER_URL}/{ACCESS_TOKEN}/sortAll` (where again, `{DOCKER_URL}` is the URL of your docker container and `{ACCESS_TOKEN}` is one of the access tokens you created). If the sort is successful, the page will automatically close itself as soon as the sort is done. As a neat trick, you can add this as an external link in your customizable sidebar (or bottom bar, or anywhere else Amazing Marvin lets you put an external link). That way you can trigger a manual sort directly from within Marvin.
 
 ## Sort list syntax
@@ -56,15 +63,15 @@ where `{ACCESS_TOKEN}` is one of the access tokens you created back when you wer
 
 The types of sorts and their options are:
 - `"field"` -- Sorts by a built-in Amazing Marvin field.
- - `"field_name"` -- The name of the field as a string. Valid fields are [listed here](https://github.com/amazingmarvin/MarvinAPI/wiki/Marvin-Data-Types#tasks).
- - `"empty_value"` -- The value to use when sorting if the field is not present in a task.
- - `"reverse"` -- *Optional* Set to either `true` or `false` to control the order of the sort. Defaults to `false`.
+  - `"field_name"` -- The name of the field as a string. Valid fields are [listed here](https://github.com/amazingmarvin/MarvinAPI/wiki/Marvin-Data-Types#tasks).
+  - `"empty_value"` -- The value to use when sorting if the field is not present in a task.
+  - `"reverse"` -- *Optional* Set to either `true` or `false` to control the order of the sort. Defaults to `false`.
 - `"is_ready"` -- Sorts by whether tasks are ready or not (i.e. not on the backburner, and not blocked by any dependencies that aren't done). By default, tasks that aren't ready appear before tasks that are (since `False==0` and `True==1` and `0 < 1`).
- - `"reverse"` -- *Optional* Set to either `true` or `false` to control the order of the sort. Defaults to `false`.
+  - `"reverse"` -- *Optional* Set to either `true` or `false` to control the order of the sort. Defaults to `false`.
 - `"label"`
- - `"labels"` -- A list of label names as strings in the order you want to sort them.
- - `"no_match_last"` -- *Optional* Set to `true` if you want tasks without the label to be sorted at the end, or `false` if you want them at the beginning. Defaults to `true`.
- - `"reverse"` -- *Optional* Set to either `true` or `false` to control the order of the sort. Defaults to `false`.
+  - `"labels"` -- A list of label names as strings in the order you want to sort them.
+  - `"no_match_last"` -- *Optional* Set to `true` if you want tasks without the label to be sorted at the end, or `false` if you want them at the beginning. Defaults to `true`.
+  - `"reverse"` -- *Optional* Set to either `true` or `false` to control the order of the sort. Defaults to `false`.
 
 So for example, if we set `SORT_LIST` to
 ```
@@ -74,10 +81,9 @@ So for example, if we set `SORT_LIST` to
     ["is_ready", {"reverse": true}],
     ["label", {"labels": ["In Progress", "Next", "Later", "Waiting"]}],
     ["field", {"field_name": "isStarred", 
-    					 "empty_value": 0, 
+               "empty_value": 0, 
                "reverse": true}]
 ]
-
 ```
 Then the Amazing Marvin Autosorter would:
 1. Sort by the `done` field, treating tasks that don't have the `done` field as `False`. Note that `False` comes before `True`, so tasks where `done==False` will be above tasks that are done.
