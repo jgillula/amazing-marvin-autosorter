@@ -14,9 +14,38 @@ Unfortunately Amazing Marvin doesn't let you create persistent sorts based on wh
 
 ### 1. Setup and run the docker container
 
+You can get the docker container from [Docker Hub](https://hub.docker.com/r/flyingsaucrdude/amazing-marvin-autosorter) by doing:
+```
+docker pull flyingsaucrdude/amazing-marvin-autosorter
+```
+
+I use [Google Cloud Run](https://cloud.google.com/run_ to host the container, but you can use any service you like as long as it hosts the container at a publicly accessible URL.
+
+#### First time setup
+To run the container on Google Cloud Run, first [create a project](https://console.cloud.google.com/projectcreate) and remember its Project ID. Then enable the [Cloud Run API](http://console.cloud.google.com/apis/library/run.googleapis.com) and the [Artifact Registry API](https://console.cloud.google.com/flows/enableapi?apiid=artifactregistry.googleapis.com&redirect=https://cloud.google.com/artifact-registry/docs/docker/quickstart) for that project. Then on your local machine, assuming you already pulled the container from Docker Hub, you need to do the following to set things up from scratch:
+```
+export PROJECT_ID={PROJECT_ID} # <-- Fill in your Project ID here
+sudo apt install google-cloud-sdk
+gcloud auth login
+gcloud config set project $PROJECT_ID
+gcloud auth configure-docker us-west1-docker.pkg.dev
+gcloud components install docker-credential-gcr
+gcloud artifacts repositories create amazing-marvin-autosorter-repo --repository-format=docker --location=us-west1
+```
+
+#### Deploying/redeploying the container
+Then to deploy the container (or a new version of it):
+```
+docker tag flyingsaucrdude/amazing-marvin-autosorter:latest us-west1-docker.pkg.dev/$PROJECT_ID/amazing-marvin-autosorter-repo/amazing-marvin-autosorter
+docker push us-west1-docker.pkg.dev/$PROJECT_ID/amazing-marvin-autosorter-repo/amazing-marvin-autosorter
+gcloud run deploy amazing-marvin-autosorter --image us-west1-docker.pkg.dev/$PROJECT_ID/amazing-marvin-autosorter-repo/amazing-marvin-autosorter
+```
+
 ### 2. Configure the docker container
 
-The docker container is configured via environment variables. The following environment variables are **required**:
+The docker container is configured via environment variables. If you use Google Cloud Run like me, I find it's easiest to configure them by just [deploying a new revision](https://console.cloud.google.com/run/deploy/us-west1/amazing-marvin-autosorter) (don't forget to select your project from the dropdown at the top after clicking that link) and then editing them in the "Variables & Secrets" tab.
+
+The following environment variables are **required**:
 
 * `COUCHDB_USERNAME` - The username for the Amazing Marvin couchdb instance, available [here](https://app.amazingmarvin.com/pre?api) as `syncUser`
 * `COUCHDB_PASSWORD` - The password for the Amazing Marvin couchdb instance, available [here](https://app.amazingmarvin.com/pre?api) as `syncPassword`
