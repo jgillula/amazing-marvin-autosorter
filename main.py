@@ -168,7 +168,6 @@ def sort_and_update_by_parent_ids(parent_ids):
     # We sort per-project, but will update all the changes at once
     updated_docs = []
     for parent_id in parent_ids:
-        print(parent_id)
         project_tasks = [task for task in affected_tasks if task['parentId'] == parent_id]
         # do the sorting
         for key, reverse in processed_sort_list:
