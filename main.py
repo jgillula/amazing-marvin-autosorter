@@ -100,7 +100,7 @@ def is_ready(task):
     return ready
 
 
-sort_functions = {"field": lambda options: (lambda task: task.get(options["field_name"], options["empty_value"]),
+sort_functions = {"field": lambda options: (lambda task: options["empty_value"] if task.get(options["field_name"], options["empty_value"]) is None and options.get("replace_none_with_empty", True) else task.get(options["field_name"], options["empty_value"]),
                                             options.get("reverse", False),
                                             [options["field_name"]]),
                   "label": lambda options: (label_key_factory(options),
@@ -168,6 +168,7 @@ def sort_and_update_by_parent_ids(parent_ids):
     # We sort per-project, but will update all the changes at once
     updated_docs = []
     for parent_id in parent_ids:
+        print(parent_id)
         project_tasks = [task for task in affected_tasks if task['parentId'] == parent_id]
         # do the sorting
         for key, reverse in processed_sort_list:
@@ -204,8 +205,8 @@ def sortAll(access_token):
         changes = rate_limit(lambda: db.changes(since=last_seq))
         update_db(changes["results"])
         last_seq = changes["last_seq"]
-        project_ids = [item.id for item in local_db.values() if item['db'] == "Categories"] #[project["_id"] for project in db.find({"selector": {"db": "Categories"}})]
-        result =  sort_and_update_by_parent_ids(project_ids)
+        parent_ids = [item.id for item in local_db.values() if item['db'] == "Categories"] #[project["_id"] for project in db.find({"selector": {"db": "Categories"}})]
+        result =  sort_and_update_by_parent_ids(parent_ids)
         if result["success"]:
             return(send_from_directory(".", "close.html"))
         else:
