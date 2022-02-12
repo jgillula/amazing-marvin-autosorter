@@ -1,3 +1,5 @@
+[![pylint Status](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/jgillula/e5c61344f9fd473973d9cfcd67000a96/raw/test.json)](https://github.com/jgillula/amazing-marvin-autosorter/actions/workflows/pylint.yml)
+
 # Amazing Marvin Auto-Sorter
 
 A docker container you can run to automatically sort your [Amazing Marvin](https://amazingmarvin.com) tasks and projects every time they change.
